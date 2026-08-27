@@ -1,0 +1,60 @@
+======================================================================
+BITCOIN TRANSACTION MONITORING — MODEL EVALUATION REPORT
+======================================================================
+
+1. DATASET OVERVIEW
+----------------------------------------------------------------------
+Total Wallet Entities   : 141
+Actual Adversaries (GT) : 48
+Actual Normal Wallets   : 93
+
+System Risk Flags Assigned:
+- HIGH Risk Flags       : 3
+- MEDIUM Risk Flags     : 26
+- LOW Risk Flags        : 112
+
+2. METRICS DEFINITIONS FOR NON-TECHNICAL AUDIENCES
+----------------------------------------------------------------------
+* PRECISION: "Out of all wallets flagged as suspicious by our system, 
+             how many were actually real adversaries?"
+             - A high precision (e.g. 90%) means very few false alarms.
+             - Formula: True Positives / (True Positives + False Positives)
+
+* RECALL:    "Out of all actual adversaries present in the dataset, 
+             how many did our system succeed in catching?"
+             - A high recall (e.g. 95%) means the system missed very few threats.
+             - Formula: True Positives / (True Positives + False Negatives)
+
+* F1-SCORE:  "The harmonic average of Precision and Recall."
+             - It provides a single balanced metric measuring model effectiveness.
+
+3. OVERALL EVALUATION METRICS
+----------------------------------------------------------------------
+Precision : 0.4138 (41.4%)
+Recall    : 0.2500 (25.0%)
+F1-Score  : 0.3117 (31.2%)
+
+4. CONFUSION MATRIX (CLASSIFICATION TALLY)
+----------------------------------------------------------------------
+                      Predicted Normal       Predicted Suspicious
+Actual Normal         76                     17                     (False Alarms)
+Actual Adversary      36                     (Missed)      12                     (Caught)
+
+Summary:
+- Correctly identified Normal wallets (True Negatives)  : 76
+- False alarms raised on Normal wallets (False Positives): 17
+- Missed actual threats (False Negatives)               : 36
+- Correctly caught actual threats (True Positives)      : 12
+
+5. DETAILED CLASSIFICATION REPORT
+----------------------------------------------------------------------
+              precision    recall  f1-score   support
+
+      Normal       0.68      0.82      0.74        93
+  Suspicious       0.41      0.25      0.31        48
+
+    accuracy                           0.62       141
+   macro avg       0.55      0.53      0.53       141
+weighted avg       0.59      0.62      0.60       141
+
+======================================================================
