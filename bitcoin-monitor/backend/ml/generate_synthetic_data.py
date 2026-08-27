@@ -75,6 +75,10 @@ BAD_IP_POOL = [random_ip() for _ in range(15)]
 # compute a meaningful is_new_address_out feature.
 SEEN_ADDRESS_POOL = [random_address() for _ in range(2000)]
 
+# Address pools for input sources so entities have transaction histories
+ILLICIT_ADDRESS_POOL = [random_address() for _ in range(150)]
+LEGIT_ADDRESS_POOL = [random_address() for _ in range(1000)]
+
 START_DATE = datetime(2025, 1, 1)
 END_DATE = datetime(2025, 12, 31)
 
@@ -132,7 +136,11 @@ def generate_row(is_illicit: bool, address_seen_tracker: set):
         recorded_label = not recorded_label
     is_illicit = recorded_label
 
-    in_addr = random_address()
+    # Select an input address from the respective pool to create history clusters
+    if is_illicit:
+        in_addr = random.choice(ILLICIT_ADDRESS_POOL)
+    else:
+        in_addr = random.choice(LEGIT_ADDRESS_POOL)
 
     row = {
         "txid": random_hash(in_addr),

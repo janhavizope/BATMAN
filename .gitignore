@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Data & Databases (Ignore local generated SQLite databases to prevent repo bloat)
+*.db
+*.sqlite
+*.sqlite3
+
+# Large Data (Ignore massive generated datasets, but keep base CSVs if needed)
+data/dev/*.parquet
+data/final/*.parquet
+
+# Models
+models/*.pkl
+models/*.h5
+models/*.pt
+models/*.onnx
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+
+# matplotlib cache
+matplotlib/
+.matplotlib/
