@@ -12,7 +12,7 @@ to page render functions defined in the ``frontend`` package.
 """
 
 import streamlit as st
-from frontend.components import render_header, render_footer
+from src.web_frontend.components import render_header, render_footer
 
 # ---------------------------------------------------------------------------
 # Page config — must be the first Streamlit call

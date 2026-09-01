@@ -54,3 +54,4 @@ logs/
 # matplotlib cache
 matplotlib/
 .matplotlib/
+*.AppImage

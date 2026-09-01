@@ -19,8 +19,8 @@ if PROJECT_ROOT not in sys.path:
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Qt
 
-from gui.main_window import MainWindow
-from gui.utils.theme_setup import setup_theme
+from src.desktop_gui.main_window import MainWindow
+from src.desktop_gui.utils.theme_setup import setup_theme
 
 def main():
     app = QApplication(sys.argv)

@@ -9,13 +9,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import pytest
 from PySide6.QtWidgets import QApplication
 
-from gui.data.schemas import (
+from src.desktop_gui.data.schemas import (
     OverviewStats, AlertRecord, EntityProfile, TransactionRecord,
     GraphData, GraphNode, GraphEdge, ExplanationRecord,
 )
-from gui.data.data_manager import DataManager
-from gui.data.filters import filter_alerts, filter_transactions, filter_graph_nodes
-from gui.state.app_state import AppState
+from src.desktop_gui.data.data_manager import DataManager
+from src.desktop_gui.data.filters import filter_alerts, filter_transactions, filter_graph_nodes
+from src.desktop_gui.state.app_state import AppState
 
 
 @pytest.fixture(scope="session")
@@ -297,7 +297,7 @@ class TestAppState:
 
 class TestPageIntegration:
     def _setup(self, app):
-        from gui.main_window import MainWindow
+        from src.desktop_gui.main_window import MainWindow
         window = MainWindow()
         window.show()
         app.processEvents()
