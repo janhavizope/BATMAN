@@ -460,7 +460,7 @@ This project demonstrates:
 👩‍💻 **Keziah Ann Mathew** 
 ---
 
-## 📝 License & Attribution
+## 📝Attribution
 
 Built for **Smart India Hackathon 2026**  
 Problem ID: **SIH26146**  
