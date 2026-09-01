@@ -4,7 +4,7 @@ Transaction Analysis Page
 Transaction table and detail view showing Transaction ID, Amount,
 Timestamp, Source, Destination, and Flag.
 
-All values displayed here are PLACEHOLDER / DEVELOPMENT data.
+
 """
 
 import streamlit as st

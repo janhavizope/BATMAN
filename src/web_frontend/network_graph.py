@@ -5,7 +5,7 @@ UI area for the future graph visualisation. Contains a small
 development example for testing layout and rendering.
 
 Node types: Wallet, Transaction, IP, ASN, Country.
-All values displayed here are PLACEHOLDER / DEVELOPMENT data.
+
 """
 
 import streamlit as st

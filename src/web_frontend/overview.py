@@ -4,7 +4,7 @@ Overview Page
 High-level dashboard summarising the current state of monitored
 Bitcoin transaction traffic.
 
-All values displayed here are PLACEHOLDER / DEVELOPMENT data.
+
 """
 
 import streamlit as st
@@ -43,10 +43,18 @@ def render_overview() -> None:
 
     with col1:
         st.subheader("Alerts over time (7d)")
-        # Generate some dummy data for the line chart to match the image
-        dates = pd.date_range(start="2026-04-25", end="2026-05-01")
-        alerts = [12, 12, 13, 15, 24, 15, 0]
-        df_line = pd.DataFrame({"Date": dates, "Alerts": alerts})
+        # Use real alerts data for the line chart
+        if alerts_df.empty:
+            df_line = pd.DataFrame({"Date": [], "Alerts": []})
+        else:
+            alerts_df['Date'] = pd.to_datetime(alerts_df['Timestamp']).dt.date
+            df_line = alerts_df.groupby('Date').size().reset_index(name='Alerts')
+            df_line['Date'] = pd.to_datetime(df_line['Date'])
+            # Fill missing dates
+            if not df_line.empty:
+                all_dates = pd.date_range(start=df_line['Date'].min(), end=df_line['Date'].max())
+                df_line = df_line.set_index('Date').reindex(all_dates, fill_value=0).reset_index()
+                df_line = df_line.rename(columns={'index': 'Date'})
 
         fig_line = px.line(
             df_line, x="Date", y="Alerts", markers=True,

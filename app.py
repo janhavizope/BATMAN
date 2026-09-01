@@ -40,6 +40,7 @@ with st.sidebar:
             "Network Graph",
             "Entity Investigation",
             "Alerts",
+            "Explainability",
         ],
         index=0,
     )
@@ -57,24 +58,28 @@ render_header()
 # Page routing
 # ---------------------------------------------------------------------------
 if selected_page == "Overview":
-    from frontend.overview import render_overview
+    from src.web_frontend.overview import render_overview
     render_overview()
 
 elif selected_page == "Transaction Analysis":
-    from frontend.transaction_analysis import render_transaction_analysis
+    from src.web_frontend.transaction_analysis import render_transaction_analysis
     render_transaction_analysis()
 
 elif selected_page == "Network Graph":
-    from frontend.network_graph import render_network_graph
+    from src.web_frontend.network_graph import render_network_graph
     render_network_graph()
 
 elif selected_page == "Entity Investigation":
-    from frontend.entity_investigation import render_entity_investigation
+    from src.web_frontend.entity_investigation import render_entity_investigation
     render_entity_investigation()
 
 elif selected_page == "Alerts":
-    from frontend.alerts import render_alerts
+    from src.web_frontend.alerts import render_alerts
     render_alerts()
+
+elif selected_page == "Explainability":
+    from src.web_frontend.explainability import render_explainability
+    render_explainability()
 
 # ---------------------------------------------------------------------------
 # Footer (appears on every page)

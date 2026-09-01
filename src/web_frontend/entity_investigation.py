@@ -5,7 +5,7 @@ Select an Entity ID and view its full profile: risk score, risk level,
 transaction count, counterparty count, timeline, network associations,
 evidence, and explanation.
 
-All values displayed here are PLACEHOLDER / DEVELOPMENT data.
+
 """
 
 import streamlit as st

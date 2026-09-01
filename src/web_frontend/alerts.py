@@ -4,7 +4,7 @@ Alerts Page
 Alert table with Rank, Entity ID, Risk Score, Risk Level, Main Reason.
 Filters by Risk Level and Entity ID.
 
-All values displayed here are PLACEHOLDER / DEVELOPMENT data.
+
 """
 
 import streamlit as st

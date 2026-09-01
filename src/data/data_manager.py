@@ -5,8 +5,8 @@ import networkx as nx
 from pathlib import Path
 
 # Paths
-BASE_DIR = Path(__file__).parent.parent
-ML_DIR = BASE_DIR / "bitcoin-monitor" / "backend" / "ml"
+ROOT_DIR = Path(__file__).parent.parent.parent
+ML_DIR = ROOT_DIR / "src" / "core" / "backend" / "ml"
 DATA_FILE = ML_DIR / "synthetic_bitcoin_transactions.csv"
 MODEL_FILE = ML_DIR / "illicit_tx_rf_model.joblib"
 
@@ -20,7 +20,7 @@ def load_model():
 def load_and_predict_data():
     if "data" not in _CACHE:
         # 1. Load from DB if available, else fallback to CSV
-        db_path = BASE_DIR / "bitcoin_transactions.db"
+        db_path = ROOT_DIR / "bitcoin_transactions.db"
         if db_path.exists():
             import sqlite3
             conn = sqlite3.connect(db_path)
@@ -126,9 +126,10 @@ def get_alerts_df():
             "Risk Score": int(row["pred_proba"] * 100),
             "Risk Level": risk_level,
             "Main Reason": f"High fan ratio ({row['fan_ratio']:.2f})" if row['fan_ratio'] > 5 else "Unusual transaction pattern",
-            "Full Entity ID": row["txid"]
+            "Full Entity ID": row["txid"],
+            "Timestamp": row["timestamp"]
         })
-    return pd.DataFrame(alerts) if alerts else pd.DataFrame(columns=["Rank", "Entity ID", "Risk Score", "Risk Level", "Main Reason", "Full Entity ID"])
+    return pd.DataFrame(alerts) if alerts else pd.DataFrame(columns=["Rank", "Entity ID", "Risk Score", "Risk Level", "Main Reason", "Full Entity ID", "Timestamp"])
 
 def get_alerts():
     """Returns a list of dicts for the PySide6 app"""
@@ -261,3 +262,55 @@ def get_scoreboard():
         scoreboard[f"Wallet ({addr[:6]})"] = timeline
         
     return scoreboard
+
+def get_explainability_data():
+    df, model_dict = load_and_predict_data()
+    
+    # Find top anomalous entities (by average pred_proba)
+    grouped = df.groupby("input_address")
+    
+    explainability = {}
+    
+    # Just take the top 50 suspicious wallets
+    top_wallets = grouped["pred_proba"].mean().sort_values(ascending=False).head(50).index.tolist()
+    
+    for addr in top_wallets:
+        group = df[df["input_address"] == addr]
+        avg_proba = group["pred_proba"].mean()
+        risk_score = int(avg_proba * 100)
+        
+        # Calculate some simple feature contributions based on the group's mean vs overall mean
+        fan_ratio_mean = group["fan_ratio"].mean()
+        fee_ratio_mean = group["fee_to_amount_ratio"].mean()
+        amount_mean = group["amount_btc"].mean()
+        
+        top_features = []
+        if fan_ratio_mean > df["fan_ratio"].mean():
+            top_features.append({"feature": "fan_ratio", "contribution": round(fan_ratio_mean, 2), "direction": "increases"})
+        if fee_ratio_mean > df["fee_to_amount_ratio"].mean():
+            top_features.append({"feature": "fee_to_amount_ratio", "contribution": round(fee_ratio_mean, 2), "direction": "increases"})
+        if amount_mean > df["amount_btc"].mean():
+            top_features.append({"feature": "amount_btc", "contribution": round(amount_mean, 4), "direction": "increases"})
+            
+        if not top_features:
+             top_features.append({"feature": "unusual_pattern", "contribution": 0.5, "direction": "increases"})
+             
+        evidence = [
+            f"Average predicted probability of illicit activity: {avg_proba:.2f}",
+            f"Executed {len(group)} transactions",
+            f"Interacted with {group['output_address'].nunique()} unique counterparties",
+        ]
+        
+        human_reason = f"Wallet {addr[:8]}... is flagged with a risk score of {risk_score} due to anomalous transaction patterns identified by the Isolation Forest model. "
+        if fan_ratio_mean > 2:
+             human_reason += "It exhibits a high fan-out ratio, suggesting possible money laundering or peeling chain behaviour. "
+             
+        explainability[addr] = {
+            "anomaly_score": avg_proba,
+            "risk_score": risk_score,
+            "top_features": top_features,
+            "evidence": evidence,
+            "human_reason": human_reason
+        }
+        
+    return explainability

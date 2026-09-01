@@ -4,29 +4,37 @@ Explainability Page
 Anomaly Score, Top Contributing Features, Evidence, and Human-readable
 Reasons for a selected entity.
 
-All values displayed here are PLACEHOLDER / DEVELOPMENT data.
+
 """
 
 import streamlit as st
 from src.web_frontend.components import render_metric_card, render_dev_badge
-from src.web_frontend.dev_data import DEV_EXPLAINABILITY, DEV_EXPLAINABILITY_IDS
+from src.data.data_manager import get_explainability_data
 
 
 def render_explainability() -> None:
     st.header("Explainability")
     render_dev_badge()
 
+    explainability_data = get_explainability_data()
+    explainability_ids = list(explainability_data.keys())
+
     # --- Entity Selector -----------------------------------------------------
     st.subheader("Select Entity")
+    
+    if not explainability_ids:
+        st.warning("No anomalous entities found in live data.")
+        return
+        
     entity_id = st.selectbox(
         "Choose an Entity ID to explain",
-        options=DEV_EXPLAINABILITY_IDS,
+        options=explainability_ids,
         index=0,
     )
 
-    expl = DEV_EXPLAINABILITY.get(entity_id)
+    expl = explainability_data.get(entity_id)
     if expl is None:
-        st.warning("Entity not found in development dataset.")
+        st.warning("Entity not found in live dataset.")
         return
 
     st.markdown("")
