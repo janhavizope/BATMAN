@@ -343,6 +343,13 @@ The system successfully detects:
 
 **BATMAN is distributed as a standalone AppImage** — no Python installation needed!
 
+## Download BATMAN
+
+### Linux x86_64
+
+[Download BATMAN-x86_64.AppImage](https://drive.google.com/uc?export=download&id=1egx_ApDxIOzhbArCCQegMSAq0_XEAxOS)
+
+After downloading on Ubuntu:
 #### Step 1: Download
 Download `BATMAN-x86_64.AppImage` to your Downloads folder:
 ```bash
