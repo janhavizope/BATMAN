@@ -5,8 +5,8 @@ BITCOIN TRANSACTION MONITORING — MODEL EVALUATION REPORT
 1. DATASET OVERVIEW
 ----------------------------------------------------------------------
 Total Wallet Entities   : 141
-Actual Adversaries (GT) : 48
-Actual Normal Wallets   : 93
+Actual Adversaries (GT) : 80
+Actual Normal Wallets   : 61
 
 System Risk Flags Assigned:
 - HIGH Risk Flags       : 3
@@ -30,31 +30,31 @@ System Risk Flags Assigned:
 
 3. OVERALL EVALUATION METRICS
 ----------------------------------------------------------------------
-Precision : 0.4138 (41.4%)
-Recall    : 0.2500 (25.0%)
-F1-Score  : 0.3117 (31.2%)
+Precision : 0.6207 (62.1%)
+Recall    : 0.2250 (22.5%)
+F1-Score  : 0.3303 (33.0%)
 
 4. CONFUSION MATRIX (CLASSIFICATION TALLY)
 ----------------------------------------------------------------------
                       Predicted Normal       Predicted Suspicious
-Actual Normal         76                     17                     (False Alarms)
-Actual Adversary      36                     (Missed)      12                     (Caught)
+Actual Normal         50                     11                     (False Alarms)
+Actual Adversary      62                     (Missed)      18                     (Caught)
 
 Summary:
-- Correctly identified Normal wallets (True Negatives)  : 76
-- False alarms raised on Normal wallets (False Positives): 17
-- Missed actual threats (False Negatives)               : 36
-- Correctly caught actual threats (True Positives)      : 12
+- Correctly identified Normal wallets (True Negatives)  : 50
+- False alarms raised on Normal wallets (False Positives): 11
+- Missed actual threats (False Negatives)               : 62
+- Correctly caught actual threats (True Positives)      : 18
 
 5. DETAILED CLASSIFICATION REPORT
 ----------------------------------------------------------------------
               precision    recall  f1-score   support
 
-      Normal       0.68      0.82      0.74        93
-  Suspicious       0.41      0.25      0.31        48
+      Normal       0.45      0.82      0.58        61
+  Suspicious       0.62      0.23      0.33        80
 
-    accuracy                           0.62       141
-   macro avg       0.55      0.53      0.53       141
-weighted avg       0.59      0.62      0.60       141
+    accuracy                           0.48       141
+   macro avg       0.53      0.52      0.45       141
+weighted avg       0.55      0.48      0.44       141
 
 ======================================================================

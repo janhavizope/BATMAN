@@ -16,13 +16,41 @@ from sklearn.metrics import (
 # Ensure backend packages can be imported if run directly
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-def generate_report(df: pd.DataFrame) -> str:
+def load_ground_truth(path: str) -> pd.Series:
+    """Load wallet-level suspicious labels indexed by wallet address."""
+    ground_truth = pd.read_parquet(path)
+    if ground_truth.index.name == "wallet_address":
+        ground_truth = ground_truth.reset_index()
+    if "wallet_address" not in ground_truth.columns:
+        raise ValueError("ground_truth.parquet must contain wallet_address as a column or index.")
+    if "is_suspicious" not in ground_truth.columns:
+        raise ValueError("ground_truth.parquet must contain an is_suspicious column.")
+
+    labels = ground_truth.set_index("wallet_address")["is_suspicious"]
+    return labels.astype(bool)
+
+
+def generate_report(df: pd.DataFrame, ground_truth: pd.Series | pd.DataFrame | None = None) -> str:
     """
     Computes performance metrics and returns a formatted text report string.
     """
-    # 1. Create Ground Truth (1 if entity_id contains "adversary", else 0)
-    # The synthetic data has entity_id values like 'entity_fan_in_adversary' etc.
-    y_true = df["entity_id"].apply(lambda eid: 1 if "adversary" in str(eid) else 0).values
+    # 1. Align the wallet-level ground-truth labels with the evaluated entities.
+    if ground_truth is None:
+        raise ValueError("Explicit wallet-level ground truth is required for evaluation.")
+    if isinstance(ground_truth, pd.DataFrame):
+        if "wallet_address" in ground_truth.columns:
+            ground_truth = ground_truth.set_index("wallet_address")
+        if "is_suspicious" not in ground_truth.columns:
+            raise ValueError("Ground-truth dataframe must contain an is_suspicious column.")
+        ground_truth = ground_truth["is_suspicious"]
+
+    evaluation_df = df
+    if "wallet_address" in evaluation_df.columns:
+        evaluation_df = evaluation_df.set_index("wallet_address")
+    missing_wallets = evaluation_df.index.difference(ground_truth.index)
+    if len(missing_wallets):
+        raise ValueError(f"Ground truth is missing {len(missing_wallets)} evaluated wallet labels.")
+    y_true = ground_truth.reindex(evaluation_df.index).astype(bool).astype(int).values
     
     # 2. Create Predicted Label (1 if risk_flag is HIGH or MEDIUM, else 0)
     y_pred = df["risk_flag"].apply(lambda flag: 1 if flag in ["HIGH", "MEDIUM"] else 0).values
@@ -104,18 +132,24 @@ Summary:
 def main():
     base_dir = os.path.join(os.path.dirname(__file__), "..", "..")
     explained_parquet_path = os.path.join(base_dir, "data", "dev", "entities_explained.parquet")
+    ground_truth_path = os.path.join(base_dir, "data", "dev", "ground_truth.parquet")
     output_dir = os.path.join(base_dir, "outputs", "evaluation")
     output_path = os.path.join(output_dir, "model_evaluation_report.txt")
     
     if not os.path.exists(explained_parquet_path):
         print(f"Error: Parquet file not found at {explained_parquet_path}. Run explain_risk.py first.")
         sys.exit(1)
+    if not os.path.exists(ground_truth_path):
+        print(f"Error: Ground-truth parquet not found at {ground_truth_path}.")
+        sys.exit(1)
         
     print(f"Loading explained entities from {explained_parquet_path}...")
     df = pd.read_parquet(explained_parquet_path)
+    print(f"Loading wallet-level ground truth from {ground_truth_path}...")
+    ground_truth = load_ground_truth(ground_truth_path)
     
     print("Computing pipeline performance evaluation...")
-    report_content = generate_report(df)
+    report_content = generate_report(df, ground_truth)
     
     # Save report to text file
     print(f"Saving evaluation report to {output_path}...")

@@ -25,7 +25,7 @@ class TransactionClusteredModel:
     Wrapper for HDBSCAN clustering model.
     """
     
-    def __init__(self, min_cluster_size: int = 5, min_samples: int = 3):
+    def __init__(self, min_cluster_size: int = 10, min_samples: int = 10):
         # min_cluster_size: The minimum size of a group of points to be considered a cluster.
         # min_samples: The number of samples in a neighborhood for a point to be considered a core point.
         self.model = HDBSCAN_Class(
@@ -78,8 +78,8 @@ def main():
     feature_cols = [col for col in df.columns if col != "anomaly_score"]
     X = df[feature_cols]
     
-    print(f"Clustering {X.shape[0]} entities with HDBSCAN (min_cluster_size=5, min_samples=3)...")
-    clusterer = TransactionClusteredModel(min_cluster_size=5, min_samples=3)
+    print(f"Clustering {X.shape[0]} entities with HDBSCAN (min_cluster_size=10, min_samples=10)...")
+    clusterer = TransactionClusteredModel(min_cluster_size=10, min_samples=10)
     labels = clusterer.fit_predict(X)
     
     # Add cluster_label column

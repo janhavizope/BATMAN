@@ -6,37 +6,32 @@ bar chart, and risk flag pie chart) using matplotlib and seaborn.
 
 import os
 import sys
+import json
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score
 
 # Ensure backend packages can be imported if run directly
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 def main():
     base_dir = os.path.join(os.path.dirname(__file__), "..", "..")
-    explained_parquet_path = os.path.join(base_dir, "data", "dev", "entities_explained.parquet")
+    evaluation_path = os.path.join(base_dir, "outputs", "evaluation", "best_unsupervised_parameters.json")
     charts_dir = os.path.join(base_dir, "outputs", "charts", "evaluation")
     
-    if not os.path.exists(explained_parquet_path):
-        print(f"Error: Parquet file not found at {explained_parquet_path}. Run explain_risk.py first.")
+    if not os.path.exists(evaluation_path):
+        print(f"Error: Persisted evaluation result not found at {evaluation_path}. Run model tuning first.")
         sys.exit(1)
         
-    print(f"Loading explained entities from {explained_parquet_path}...")
-    df = pd.read_parquet(explained_parquet_path)
+    print(f"Loading persisted evaluation result from {evaluation_path}...")
+    with open(evaluation_path, "r", encoding="utf-8") as evaluation_file:
+        evaluation = json.load(evaluation_file)["best"]
     
-    # ----------------------------------------------------
-    # Calculate Metrics and Confusion Matrix dynamically
-    # ----------------------------------------------------
-    y_true = df["entity_id"].apply(lambda eid: 1 if "adversary" in str(eid) else 0).values
-    y_pred = df["risk_flag"].apply(lambda flag: 1 if flag in ["HIGH", "MEDIUM"] else 0).values
-    
-    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
-    precision = precision_score(y_true, y_pred, zero_division=0) * 100.0
-    recall = recall_score(y_true, y_pred, zero_division=0) * 100.0
-    f1 = f1_score(y_true, y_pred, zero_division=0) * 100.0
+    tn, fp, fn, tp = (evaluation[key] for key in ["tn", "fp", "fn", "tp"])
+    precision = evaluation["precision"] * 100.0
+    recall = evaluation["recall"] * 100.0
+    f1 = evaluation["f1"] * 100.0
     
     # Ensure charts output directory exists
     os.makedirs(charts_dir, exist_ok=True)
@@ -114,31 +109,61 @@ def main():
     plt.savefig(metrics_path, dpi=150)
     plt.close()
     print(f"Saved: {metrics_path}")
+
+    # ----------------------------------------------------
+    # Chart 3: Accuracy Graph
+    # ----------------------------------------------------
+    print("Generating accuracy graph...")
+    accuracy = (tp + tn) / (tp + tn + fp + fn) * 100.0
+    plt.figure(figsize=(7, 5.5))
+    ax = sns.barplot(x=["Accuracy"], y=[accuracy], color="#2b5c8f")
+    ax.annotate(
+        f"{accuracy:.2f}%",
+        (ax.patches[0].get_x() + ax.patches[0].get_width() / 2.0, accuracy),
+        ha="center",
+        va="center",
+        xytext=(0, 8),
+        textcoords="offset points",
+        fontweight="bold",
+        fontsize=11,
+    )
+    plt.title("ML Model Accuracy", fontsize=14, fontweight="bold", pad=15)
+    plt.ylabel("Percentage (%)", fontsize=12)
+    plt.xlabel("Metric", fontsize=12)
+    plt.ylim(0, 100)
+    plt.tight_layout()
+
+    accuracy_path = os.path.join(os.path.dirname(charts_dir), "accuracy_graph.png")
+    plt.savefig(accuracy_path, dpi=150)
+    plt.close()
+    print(f"Saved: {accuracy_path}")
     
     # ----------------------------------------------------
-    # Chart 3: Risk Flag Pie Chart
+    # Chart 4: Persisted prediction distribution
     # ----------------------------------------------------
     print("Generating risk flag pie chart...")
     plt.figure(figsize=(7, 5.5))
     
-    # Make sure we maintain LOW -> MEDIUM -> HIGH order
-    flag_counts = df["risk_flag"].value_counts().reindex(["LOW", "MEDIUM", "HIGH"]).fillna(0)
+    prediction_counts = pd.Series(
+        [tn + fn, fp + tp],
+        index=["Predicted Normal", "Predicted Suspicious"],
+    )
     
     # Clean professional colors: soft blue, amber/yellow-orange, dark orange
     pie_colors = ["#3498db", "#f39c12", "#e67e22"]
     
     # Plot pie
     plt.pie(
-        flag_counts.values, 
-        labels=flag_counts.index, 
+        prediction_counts.values,
+        labels=prediction_counts.index,
         autopct='%1.1f%%',
         startangle=140, 
         colors=pie_colors, 
         textprops={'fontsize': 11, 'weight': 'bold'}
     )
     
-    plt.title("Distribution of Assigned Risk Flags", fontsize=14, fontweight="bold", pad=15)
-    plt.legend(flag_counts.index, loc="upper right")
+    plt.title("Distribution of Persisted Predictions", fontsize=14, fontweight="bold", pad=15)
+    plt.legend(prediction_counts.index, loc="upper right")
     plt.tight_layout()
     
     pie_path = os.path.join(charts_dir, "risk_flag_pie_chart.png")

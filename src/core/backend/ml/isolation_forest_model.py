@@ -19,14 +19,17 @@ class TransactionAnomalyDetector:
     Wrapper for scikit-learn's IsolationForest to detect anomalous Bitcoin entities.
     """
     
-    def __init__(self, contamination: float = 0.05, random_state: int = 42):
+    def __init__(self, contamination: float = 0.03, random_state: int = 42,
+                 n_estimators: int = 200, max_samples="sqrt"):
         # contamination represents the expected proportion of outliers/anomalies in the data.
         # fit() will construct the forest of isolation trees.
         # decision_function() returns the raw anomaly scores where lower values denote anomalies.
+        self.max_samples = max_samples
         self.model = IsolationForest(
             contamination=contamination,
             random_state=random_state,
-            n_estimators=100
+            n_estimators=n_estimators,
+            max_samples=("auto" if max_samples == "sqrt" else max_samples),
         )
         
     def train(self, X: pd.DataFrame) -> np.ndarray:
@@ -39,6 +42,8 @@ class TransactionAnomalyDetector:
                  Since recursive partitioning produces noticeably shorter paths for anomalies, 
                  anomalous samples will require fewer splits to isolate.
         """
+        if self.max_samples == "sqrt":
+            self.model.set_params(max_samples=max(1, int(np.sqrt(len(X)))))
         self.model.fit(X)
         return self.get_anomaly_scores(X)
         
@@ -101,8 +106,8 @@ def main():
     numeric_cols = X.select_dtypes(include=[np.number]).columns
     X_numeric = X[numeric_cols]
     
-    print(f"Training Isolation Forest (contamination=0.05)...")
-    detector = TransactionAnomalyDetector(contamination=0.05)
+    print("Training Isolation Forest (n_estimators=200, contamination=0.03, max_samples=sqrt)...")
+    detector = TransactionAnomalyDetector(contamination=0.03, n_estimators=200, max_samples="sqrt")
     anomaly_scores = detector.train(X_numeric)
     
     # Add anomaly_score column

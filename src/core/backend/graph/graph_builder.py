@@ -4,9 +4,17 @@ Constructs a heterogeneous NetworkX graph from Bitcoin transactions
 and network traffic metadata, and implements multi-hop wallet discovery.
 """
 
+import os
 import networkx as nx
 import pandas as pd
 from typing import Dict, Set, Any
+
+# Dataset consumed by this pipeline. Edit here to switch between
+# the small (dev_dataset.csv) and large (dev_dataset_50k.csv) datasets.
+DATASET_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "data", "dev", "dev_dataset_50k.csv",
+)
 
 class TransactionGraphBuilder:
     """

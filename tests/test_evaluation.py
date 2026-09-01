@@ -47,6 +47,11 @@ class TestModelEvaluation(unittest.TestCase):
         }
         self.df = pd.DataFrame(self.mock_data)
         self.df.index = [f"wallet_{i}" for i in range(10)]
+        self.ground_truth = pd.Series(
+            [True, True, True, False, False, False, False, False, False, True],
+            index=self.df.index,
+            name="is_suspicious",
+        )
 
     def test_metrics_calculation(self):
         """Test that precision, recall, and F1 calculations match expected counts."""
@@ -68,7 +73,7 @@ class TestModelEvaluation(unittest.TestCase):
         # Recall = TP / (TP + FN) = 2 / 4 = 50.0%
         # F1 = 2 * (P * R) / (P + R) = 2 * (0.6667 * 0.5) / (1.1667) = 57.14%
         
-        report_text = generate_report(self.df)
+        report_text = generate_report(self.df, self.ground_truth)
         
         # Assertions on text content
         self.assertIn("Precision : 0.6667", report_text)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 run_step2.py
-Driver script to run correlation and graph construction on data/dev/dev_dataset.csv,
+Driver script to run correlation and graph construction on data/dev/dev_dataset_50k.csv,
 print basic network statistics, test multi-hop traversal, and save the degree distribution.
 """
 
@@ -24,10 +24,10 @@ from src.core.backend.correlation.correlator import TransactionCorrelator
 from src.core.backend.graph.graph_builder import TransactionGraphBuilder
 
 def main():
-    dataset_path = os.path.join("data", "dev", "dev_dataset.csv")
+    dataset_path = os.path.join("data", "dev", "dev_dataset_50k.csv")
     if not os.path.exists(dataset_path):
         # Check parent folder relative path if executed inside scripts/
-        dataset_path = os.path.join("..", "data", "dev", "dev_dataset.csv")
+        dataset_path = os.path.join("..", "data", "dev", "dev_dataset_50k.csv")
         
     if not os.path.exists(dataset_path):
         print(f"Error: Dataset not found at {dataset_path}. Please run generate_dev_data.py first.")
