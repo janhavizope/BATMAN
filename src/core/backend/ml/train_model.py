@@ -30,8 +30,12 @@ from sklearn.metrics import (
     RocCurveDisplay,
 )
 
-DATA_FILE = "synthetic_bitcoin_transactions.csv"
-MODEL_FILE = "illicit_tx_rf_model.joblib"
+from pathlib import Path
+import os
+
+DIR = Path(__file__).parent
+DATA_FILE = DIR / "synthetic_bitcoin_transactions.csv"
+MODEL_FILE = DIR / "illicit_tx_rf_model.joblib"
 
 
 def load_and_engineer_features(path: str) -> pd.DataFrame:
@@ -48,7 +52,7 @@ def load_and_engineer_features(path: str) -> pd.DataFrame:
     df["fan_ratio"] = df["fan_ratio"].fillna(0)
 
     # coarse IP feature: first octet as a category-ish numeric bucket
-    df["ip_first_octet"] = df["ip_address"].str.split(".").str[0].astype(int)
+    df["ip_first_octet"] = df["ip_address"].str.extract(r'(\d+)')[0].fillna(0).astype(int)
 
     feature_cols = [
         "amount_btc",

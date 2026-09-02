@@ -61,14 +61,13 @@ class DataManager:
             self._alerts = []
             if not alerts_df.empty:
                 for _, row in alerts_df.iterrows():
-                    self._alerts.append(AlertRecord.from_dict({
-                        "rank": int(row["Rank"]),
-                        "entity_id": row["Entity ID"],
-                        "risk_score": int(row["Risk Score"]),
-                        "risk_level": row["Risk Level"],
-                        "main_reason": row["Main Reason"],
-                        "full_entity_id": row["Full Entity ID"]
-                    }))
+                    self._alerts.append(AlertRecord(
+                        rank=int(row["Rank"]),
+                        entity_id=row["Entity ID"],
+                        risk_score=int(row["Risk Score"]),
+                        risk_level=row["Risk Level"],
+                        main_reason=row["Main Reason"]
+                    ))
 
             # Entities
             entities_raw = backend.get_entities()
@@ -77,17 +76,16 @@ class DataManager:
                 self._entities[eid] = EntityProfile.from_dict(raw)
 
             # Transactions
-            # Rename keys for Desktop GUI schemas which uses snake_case, unlike the df columns
             self._transactions = []
             for t in backend.get_transactions():
-                self._transactions.append(TransactionRecord.from_dict({
-                    "transaction_id": t["Transaction ID"],
-                    "amount_btc": float(t["Amount (BTC)"]),
-                    "timestamp": t["Timestamp"],
-                    "source": t["Source"],
-                    "destination": t["Destination"],
-                    "flag": t["Flag"]
-                }))
+                self._transactions.append(TransactionRecord(
+                    tx_id=t["Transaction ID"],
+                    amount_btc=float(t["Amount (BTC)"]),
+                    timestamp=t["Timestamp"],
+                    source=t["Source"],
+                    destination=t["Destination"],
+                    flag=t["Flag"]
+                ))
 
             # Graph Data
             nodes, edges, _, _ = backend.get_graph_data()

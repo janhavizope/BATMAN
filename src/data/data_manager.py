@@ -41,7 +41,7 @@ def load_and_predict_data():
         df["fan_ratio"] = df["num_outputs"] / df["num_inputs"].replace(0, np.nan)
         df["fan_ratio"] = df["fan_ratio"].fillna(0)
     
-        df["ip_first_octet"] = df["ip_address"].str.split(".").str[0].astype(int)
+        df["ip_first_octet"] = df["ip_address"].str.extract(r'(\d+)')[0].fillna(0).astype(int)
         
         # Load model
         model_dict = load_model()
@@ -144,7 +144,7 @@ def get_entities():
     
     count = 0
     for addr, group in grouped:
-        if count >= 50:
+        if count >= 500:
             break
         count += 1
         avg_proba = group["pred_proba"].mean()
@@ -178,7 +178,7 @@ def get_entity_ids():
 def get_graph_data():
     df, _ = load_and_predict_data()
     
-    subset = df.sort_values(by="pred_proba", ascending=False).head(20)
+    subset = df.sort_values(by="pred_proba", ascending=False).head(200)
     
     nodes = []
     edges = []
