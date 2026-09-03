@@ -91,7 +91,7 @@ def main():
     # Save output
     print(f"Saving clustered entities to Parquet at {output_path}...")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    result_df.to_parquet(output_path)
+    result_df[["cluster_id"]].to_parquet(output_path)
     
     # Analyze clusters
     unique_labels = set(labels)
