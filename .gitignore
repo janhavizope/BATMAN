@@ -57,3 +57,4 @@ matplotlib/
 *.AppImage
 # Results
 data/dev/results.json
+BATMAN.png.jpeg

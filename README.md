@@ -347,7 +347,8 @@ The system successfully detects:
 
 ### Linux x86_64
 
-[Download BATMAN-x86_64.AppImage](https://drive.google.com/uc?export=download&id=1egx_ApDxIOzhbArCCQegMSAq0_XEAxOS)
+[Download BATMAN-x86_64.AppImage](https://drive.google.com/file/d/1XKrpaMlFW2FChI7zCK9j118-lNAXL5-P/view?usp=sharing)
+
 
 After downloading on Ubuntu:
 #### Step 1: Download
