@@ -45,18 +45,23 @@ class TransactionValidator:
             except (json.JSONDecodeError, TypeError):
                 pass
             
-            # Fallback split if it's a comma-separated string without brackets
+            # Fallback split if it's a comma-separated or pipe-separated string without brackets
             cleaned = val_str.replace("[", "").replace("]", "").replace("'", "").replace('"', "")
             if cleaned:
+                if "|" in cleaned:
+                    return [item.strip() for item in cleaned.split("|")]
                 return [item.strip() for item in cleaned.split(",")]
         return []
 
     def is_valid_ip(self, ip_str: Any) -> bool:
-        """Verify if string is a valid IPv4 or IPv6 address."""
+        """Verify if string is a valid IPv4 or IPv6 address or a synthetic ip."""
         if not isinstance(ip_str, str):
             return False
+        ip_str = ip_str.strip()
+        if ip_str.startswith("ip_"):
+            return True
         try:
-            ipaddress.ip_address(ip_str.strip())
+            ipaddress.ip_address(ip_str)
             return True
         except ValueError:
             return False

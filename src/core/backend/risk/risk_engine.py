@@ -8,12 +8,14 @@ import json
 import os
 import sys
 from typing import Dict, List
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 # Allow the script to be run directly from the repository root.
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+REPO_ROOT = Path(__file__).resolve().parents[4]
+sys.path.append(str(REPO_ROOT))
 
 
 # Signed point-biserial correlations from the wallet-level validation run.
@@ -58,25 +60,27 @@ def min_max_scale(values: pd.Series, invert: bool = False) -> pd.Series:
     return 100 - scaled if invert else scaled
 
 
+from src.core.backend.ingestion.ingestor import TransactionIngestor
+
 def load_ground_truth(csv_path: str) -> pd.DataFrame:
     """Return one suspicious/not-suspicious ground-truth row per wallet."""
-    raw_df = pd.read_csv(csv_path)
+    ingestor = TransactionIngestor()
+    raw_df, _ = ingestor.ingest(csv_path)
     wallet_truth: Dict[str, bool] = {}
 
     for _, row in raw_df.iterrows():
-        try:
-            input_wallets = json.loads(row["input_addresses[]"])
-            output_wallets = json.loads(row["output_addresses[]"])
-        except (json.JSONDecodeError, TypeError):
-            continue
+        input_wallets = row.get("input_addresses[]", [])
+        output_wallets = row.get("output_addresses[]", [])
 
-        is_suspicious = bool(row["is_suspicious"])
-        if isinstance(row["is_suspicious"], str):
+        if not isinstance(input_wallets, list):
+            input_wallets = []
+        if not isinstance(output_wallets, list):
+            output_wallets = []
+
+        is_suspicious = bool(row.get("is_suspicious", False))
+        if isinstance(row.get("is_suspicious"), str):
             is_suspicious = row["is_suspicious"].strip().lower() == "true"
 
-        # pattern_type is loaded as part of the raw ground truth. The explicit
-        # is_suspicious flag remains the source of truth for validation.
-        _pattern_type = row.get("pattern_type", "normal")
         for wallet in input_wallets + output_wallets:
             wallet_truth[wallet] = wallet_truth.get(wallet, False) or is_suspicious
 
@@ -182,12 +186,12 @@ def build_reasons(row: pd.Series, averages: pd.Series) -> List[str]:
 
 def main() -> None:
     """Build and save the final wallet risk results."""
-    base_dir = os.path.join(os.path.dirname(__file__), "..", "..")
-    features_path = os.path.join(base_dir, "data", "dev", "features.parquet")
-    anomaly_path = os.path.join(base_dir, "data", "dev", "anomaly_scores.parquet")
-    cluster_path = os.path.join(base_dir, "data", "dev", "cluster_labels.parquet")
-    raw_path = os.path.join(base_dir, "data", "dev", "dev_dataset.csv")
-    output_path = os.path.join(base_dir, "data", "dev", "results.json")
+    REPO_ROOT = Path(__file__).resolve().parents[4]
+    features_path = str(REPO_ROOT / "data" / "dev" / "features.parquet")
+    anomaly_path = str(REPO_ROOT / "data" / "dev" / "anomaly_scores.parquet")
+    cluster_path = str(REPO_ROOT / "data" / "dev" / "cluster_labels.parquet")
+    raw_path = str(REPO_ROOT / "data" / "dev" / "dev_dataset_50k.csv")
+    output_path = str(REPO_ROOT / "data" / "dev" / "results.json")
 
     required_paths = [features_path, anomaly_path, cluster_path, raw_path]
     missing_paths = [path for path in required_paths if not os.path.exists(path)]

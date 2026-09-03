@@ -8,6 +8,7 @@ import os
 import sys
 import pandas as pd
 import numpy as np
+from pathlib import Path
 from sklearn.preprocessing import StandardScaler
 
 # Try importing from original hdbscan library; fall back to scikit-learn's HDBSCAN
@@ -18,7 +19,8 @@ except ImportError:
     from sklearn.cluster import HDBSCAN as HDBSCAN_Class
 
 # Ensure backend packages can be imported
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+REPO_ROOT = Path(__file__).resolve().parents[4]
+sys.path.append(str(REPO_ROOT))
 
 class TransactionClusteredModel:
     """
@@ -57,9 +59,9 @@ class TransactionClusteredModel:
         return labels
 
 def main():
-    base_dir = os.path.join(os.path.dirname(__file__), "..", "..")
-    scores_path = os.path.join(base_dir, "data", "dev", "anomaly_scores.parquet")
-    output_path = os.path.join(base_dir, "data", "dev", "clustered_entities.parquet")
+    REPO_ROOT = Path(__file__).resolve().parents[4]
+    scores_path = str(REPO_ROOT / "data" / "dev" / "anomaly_scores.parquet")
+    output_path = str(REPO_ROOT / "data" / "dev" / "cluster_labels.parquet")
     
     if not os.path.exists(scores_path):
         print(f"Error: anomaly_scores.parquet not found at {scores_path}. Run anomaly detection first.")
@@ -82,9 +84,9 @@ def main():
     clusterer = TransactionClusteredModel(min_cluster_size=10, min_samples=10)
     labels = clusterer.fit_predict(X)
     
-    # Add cluster_label column
+    # Add cluster_id column
     result_df = df.copy()
-    result_df["cluster_label"] = labels
+    result_df["cluster_id"] = labels
     
     # Save output
     print(f"Saving clustered entities to Parquet at {output_path}...")
@@ -102,7 +104,7 @@ def main():
     print(f"Number of entities labeled as noise (-1): {num_noise}")
     
     # Group by showing average anomaly_score per cluster
-    groupby_stats = result_df.groupby("cluster_label").agg(
+    groupby_stats = result_df.groupby("cluster_id").agg(
         entity_count=("anomaly_score", "count"),
         avg_anomaly_score=("anomaly_score", "mean"),
         max_anomaly_score=("anomaly_score", "max")

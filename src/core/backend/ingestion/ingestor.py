@@ -24,13 +24,13 @@ class TransactionIngestor:
         ext = ext.lower()
 
         if ext == ".csv":
-            # Read CSV. Since array fields are stored as JSON strings,
+            # Read CSV. Since array fields are stored as JSON strings or pipe-delimited,
             # we read them as strings so the validator can parse them.
-            return pd.read_csv(file_path, dtype={
-                "input_addresses[]": str,
-                "output_addresses[]": str,
-                "input_amounts[]": str,
-                "output_amounts[]": str,
+            return pd.read_csv(file_path, comment='#', dtype={
+                "input_addresses": str,
+                "output_addresses": str,
+                "input_amounts": str,
+                "output_amounts": str,
                 "txid": str,
                 "geo_country": str,
                 "asn": str,

@@ -5,6 +5,7 @@ Clusters wallet entities using HDBSCAN on engineered numeric features.
 
 import os
 import sys
+from pathlib import Path
 
 import hdbscan
 import numpy as np
@@ -12,14 +13,15 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 # Allow the script to be run directly from the repository root.
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+REPO_ROOT = Path(__file__).resolve().parents[4]
+sys.path.append(str(REPO_ROOT))
 
 
 def main() -> None:
     """Load engineered features, assign HDBSCAN clusters, and save the results."""
-    base_dir = os.path.join(os.path.dirname(__file__), "..", "..")
-    features_path = os.path.join(base_dir, "data", "dev", "features.parquet")
-    output_path = os.path.join(base_dir, "data", "dev", "cluster_labels.parquet")
+    REPO_ROOT = Path(__file__).resolve().parents[4]
+    features_path = str(REPO_ROOT / "data" / "dev" / "features.parquet")
+    output_path = str(REPO_ROOT / "data" / "dev" / "cluster_labels.parquet")
 
     if not os.path.exists(features_path):
         print(

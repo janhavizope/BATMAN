@@ -8,22 +8,19 @@ import os
 import sys
 import time
 from typing import Any, Dict, Iterable, List, Optional
+from pathlib import Path
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 
-# Ensure graph builder and ingestor can be imported if run directly.
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+# Resolve repository root robustly
+REPO_ROOT = Path(__file__).resolve().parents[4]
+sys.path.append(str(REPO_ROOT))
 
-from backend.graph.graph_builder import TransactionGraphBuilder
+from src.core.backend.graph.graph_builder import TransactionGraphBuilder
 
-DATASET_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "data",
-    "dev",
-    "dev_dataset_50k.csv",
-)
+DATASET_PATH = str(REPO_ROOT / "data" / "dev" / "dev_dataset_50k.csv")
 WINDOW_SECONDS = 840
 
 
@@ -92,14 +89,20 @@ class WalletFeatureEngineer:
                 output_rows[wallet].append(row_index)
 
         degree_centrality = nx.degree_centrality(G)
-        betweenness_samples = min(50, max(10, len(G) // 20))
-        betweenness_centrality = nx.betweenness_centrality(G, k=betweenness_samples, seed=42)
+        betweenness_samples = min(len(G), min(50, max(10, len(G) // 20)))
+        if betweenness_samples > 0:
+            betweenness_centrality = nx.betweenness_centrality(G, k=betweenness_samples, seed=42)
+        else:
+            betweenness_centrality = {}
         pagerank = nx.pagerank(G, max_iter=200)
         core_number = nx.core_number(G.to_undirected())
 
         feature_records: List[Dict[str, Any]] = []
+        total_wallets = len(all_wallets)
 
-        for wallet in all_wallets:
+        for i, wallet in enumerate(all_wallets):
+            if i % 100 == 0:
+                print(f"Processing wallet {i}/{total_wallets}...")
             wallet_node = f"wallet:{wallet}"
             inputs_df = df.loc[input_rows[wallet]]
             outputs_df = df.loc[output_rows[wallet]]
@@ -265,11 +268,11 @@ class WalletFeatureEngineer:
 
 
 if __name__ == "__main__":
-    from backend.ingestion.ingestor import TransactionIngestor
+    from src.core.backend.ingestion.ingestor import TransactionIngestor
 
-    base_dir = os.path.join(os.path.dirname(__file__), "..", "..")
+    REPO_ROOT = Path(__file__).resolve().parents[4]
     dataset_path = DATASET_PATH
-    output_parquet_path = os.path.join(base_dir, "data", "dev", "features.parquet")
+    output_parquet_path = str(REPO_ROOT / "data" / "dev" / "features.parquet")
 
     if not os.path.exists(dataset_path):
         print(f"Error: dataset not found at {dataset_path}")

@@ -55,3 +55,5 @@ logs/
 matplotlib/
 .matplotlib/
 *.AppImage
+# Results
+data/dev/results.json
